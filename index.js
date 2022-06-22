@@ -1,7 +1,7 @@
 const renderText = require("puppeteer-render-text");
 
 const fonts = {
-  "Agata":
+  Agata:
     "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3451956/agata-medium-font-original.ttf",
   "Keele Decorated":
     "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3466336/keele-decorated-regular-font-original.ttf",
