@@ -1,4 +1,8 @@
-const renderText = require("puppeteer-render-text");
+const fs = require("fs");
+const path = require("path");
+
+const puppeteer = require("puppeteer");
+const Handlebars = require("handlebars");
 
 const fonts = {
   Agata:
@@ -17,17 +21,35 @@ const fonts = {
     "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3451927/5by7-bold-font-original.ttf",
 };
 
-for (const [family, url] of Object.entries(fonts)) {
-  renderText({
-    text: family,
-    output: `${family}.png`,
-    style: {
-      fontFamily: family,
-      fontSize: 32,
-      lineHeight: 1.5,
-    },
-    inject: {
-      style: `@font-face { font-family: '${family}'; src: url('${url}'); }`,
-    },
-  }).then(() => console.log(`Ready ${family}`));
-}
+(async () => {
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+  const page = await browser.newPage();
+  await page.setViewport({
+    deviceScaleFactor: 1,
+    width: 640,
+    height: 480,
+  });
+
+  const template = Handlebars.compile(
+    fs.readFileSync(path.resolve(__dirname, "template.hbs")).toString()
+  );
+
+  for (const [family, url] of Object.entries(fonts)) {
+    const data = { text: family, url, family };
+    const html = await template(data);
+    await page.setContent(html);
+    const canvas = await page.$(".text");
+    const screenshot = path.resolve(__dirname, "previews", `${family}.png`);
+    await canvas.screenshot({
+      path: screenshot,
+      omitBackground: true,
+    });
+    await canvas.dispose();
+
+    console.log("Ready", family, screenshot);
+  }
+
+  await browser.close();
+})();

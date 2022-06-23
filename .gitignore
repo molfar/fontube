@@ -1,3 +1,4 @@
 .DS_Store
-*.png
 node_modules
+previews/*
+!previews/.keep
