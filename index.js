@@ -32,7 +32,7 @@ const fonts = {
     height: 480,
   });
 
-  page.on("console", msg => console.log(msg.type(), msg.text()));
+  page.on("console", (msg) => console.log(msg.type(), msg.text()));
 
   const template = Handlebars.compile(
     fs.readFileSync(path.resolve(__dirname, "template.hbs")).toString()
