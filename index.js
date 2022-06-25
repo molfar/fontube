@@ -1,57 +1,23 @@
-const fs = require("fs");
-const path = require("path");
+#!/usr/bin/env node
 
-const puppeteer = require("puppeteer");
-const Handlebars = require("handlebars");
+const { program } = require("commander");
+const { convert } = require("./lib/convert");
 
-const fonts = {
-  Agata:
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3451956/agata-medium-font-original.ttf",
-  "Keele Decorated":
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3466336/keele-decorated-regular-font-original.ttf",
-  Gresham:
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3465128/gresham-regular-font-original.ttf",
-  Forvertz:
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3452696/forvertz-regular-font-original.ttf",
-  "KayZ Handwritting":
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3466330/kayz-handwritting-medium-font-original.ttf",
-  Aaram:
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3451932/aaram-regular-font-original.ttf",
-  "5by7":
-    "https://creazilla-store.fra1.digitaloceanspaces.com/fonts/3451927/5by7-bold-font-original.ttf",
-};
-
-(async () => {
-  const browser = await puppeteer.launch({
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
-  });
-  const page = await browser.newPage();
-  await page.setViewport({
-    deviceScaleFactor: 1,
-    width: 640,
-    height: 480,
-  });
-
-  page.on("console", (msg) => console.log(msg.type(), msg.text()));
-
-  const template = Handlebars.compile(
-    fs.readFileSync(path.resolve(__dirname, "template.hbs")).toString()
+program
+  .name("fontube")
+  .description("CLI to render fonts with headless browser")
+  .version("1.0.0")
+  .requiredOption("-v, --variant <name>", "Name of template file to use")
+  .requiredOption("-o, --output <path>", "Output path for generated image")
+  .requiredOption("-f, --family <name>", "Font family name")
+  .requiredOption("-u, --url <path>", "Public accessible url to font source")
+  .requiredOption(
+    "-t, --text <string>",
+    "Text to render (default to font family name)"
   );
 
-  for (const [family, url] of Object.entries(fonts)) {
-    const data = { text: family, url, family };
-    const html = await template(data);
-    await page.setContent(html);
-    const canvas = await page.$(".text");
-    const screenshot = path.resolve(__dirname, "previews", `${family}.png`);
-    await canvas.screenshot({
-      path: screenshot,
-      omitBackground: true,
-    });
-    await canvas.dispose();
+program.parse();
 
-    console.log("Ready", family, screenshot);
-  }
+const { variant, output, ...data } = program.opts();
 
-  await browser.close();
-})();
+convert(variant, output, data);
