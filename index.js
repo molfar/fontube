@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const { program } = require("commander");
-const { Browser } = require("puppeteer");
 const { launch, compile, convert } = require("./lib/convert");
 const path = require("path");
 
