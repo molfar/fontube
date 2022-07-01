@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 const { program } = require("commander");
-const { convert } = require("./lib/convert");
+const { Browser } = require("puppeteer");
+const { launch, compile, convert } = require("./lib/convert");
+const path = require("path");
 
 program
   .name("fontube")
@@ -11,13 +13,18 @@ program
   .requiredOption("-o, --output <path>", "Output path for generated image")
   .requiredOption("-f, --family <name>", "Font family name")
   .requiredOption("-u, --url <path>", "Public accessible url to font source")
-  .requiredOption(
-    "-t, --text <string>",
-    "Text to render (default to font family name)"
-  );
+  .requiredOption("-t, --text <string>", "Text to render");
 
 program.parse();
 
 const { variant, output, ...data } = program.opts();
+const templatePath = path.join("./templates", `${variant}.hbs`);
 
-convert(variant, output, data);
+Promise.all([
+  compile(templatePath, data),
+  launch().then((b) => b.defaultBrowserContext()),
+]).then(([html, context]) =>
+  convert(context, html, output)
+    .then(console.log)
+    .finally(() => context.browser().close())
+);

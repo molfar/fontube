@@ -1,0 +1,133 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face {
+        font-family: "{{family}}";
+        src: url("{{url}}");
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: transparent;
+        overflow: hidden;
+      }
+      .text {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "{{family}}";
+        text-align: center;
+      }
+    </style>
+    <script> 
+      window.onload = () => {
+        const SQUARE_SIZE = 1920;
+        const PADDING = SQUARE_SIZE * 0.05;
+        const FONT_SIZE = SQUARE_SIZE * 0.64;
+        const MIN_CHAR_HEIGHT = SQUARE_SIZE * 0.48;
+        const MAX_TEXT_HEIGHT = SQUARE_SIZE * 0.96;
+        const getTextMeasure = (fontSize, family) => {
+          //get canvas context
+          const canvas = document.querySelector('canvas');
+          const ctx = canvas.getContext('2d');
+          //set up font styles
+          ctx.font = `${fontSize}px "${family}"`;
+
+          const text = family;
+          //measuring text
+          const textMetrics = ctx.measureText(text);
+          const actualMinCharHeight = text.split('').filter(ch => !!ch).reduce((accum, ch) => {
+            const metrics = ctx.measureText(ch);
+            const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+            if(height === 0) return accum;
+            return Math.min(accum, height);
+          }, 1000);
+          return {
+            actualMinCharHeight,
+            actualTextHeight: textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent
+          };
+        };
+        const getDOMElementSize = (element) => ({
+          width: element.getBoundingClientRect().width,
+          height: element.getBoundingClientRect().height,
+        });
+        const getDOMElementPadding = (element) => {
+          const {paddingLeft, paddingRight, paddingTop, paddingBottom} = getComputedStyle(element);
+          return {
+            x: parseFloat(paddingLeft) + parseFloat(paddingRight),
+            y: parseFloat(paddingTop) + parseFloat(paddingBottom),
+          }
+        };
+        const getInnerOuterSizeFactor = (innerDOM, outerDOM) => {
+          const inner = getDOMElementSize(innerDOM);
+          const outer = getDOMElementSize(outerDOM);
+          const outerOffset = getDOMElementPadding(outerDOM);
+          outer.width -= outerOffset.x;
+          outer.height -= outerOffset.y;
+          const widthFactor = outer.width/inner.width;
+          const heightFactor = outer.height/inner.height;
+          return {
+            width: widthFactor,
+            height: heightFactor,
+          }
+        };
+        const scaleText = (element, scale) => {
+          const {fontSize, lineHeight} = getComputedStyle(innerDOM);
+          element.style.lineHeight = parseFloat(lineHeight) * scale + 'px';
+          element.style.fontSize = parseFloat(fontSize) * scale + 'px';
+        };
+
+        const innerDOM = document.querySelector('.inner');
+        const outerDOM = document.querySelector('.outer');
+        {
+          //set initial state
+          outerDOM.style.fontSize = FONT_SIZE + 'px';
+          outerDOM.style.lineHeight = MAX_TEXT_HEIGHT + 'px';
+          outerDOM.style.width = SQUARE_SIZE + 'px';
+          outerDOM.style.height = SQUARE_SIZE + 'px';
+          outerDOM.style.padding = PADDING + 'px';
+        }
+
+        //set new line-height according to text measure
+        const {actualMinCharHeight, actualTextHeight} = getTextMeasure(FONT_SIZE, '{{family}}');
+
+        const {lineHeight} = getComputedStyle(innerDOM);
+
+        const minCharHeightScale = MIN_CHAR_HEIGHT/actualMinCharHeight;
+        const maxTextHeightScale = MAX_TEXT_HEIGHT/actualTextHeight;
+        const resultScale = Math.min(maxTextHeightScale, minCharHeightScale);
+
+        innerDOM.style.lineHeight = parseFloat(lineHeight) * (1/resultScale) * 1.1 + 'px';
+
+        //fit text to square 
+        {
+          const sizeFactor = getInnerOuterSizeFactor(innerDOM, outerDOM);
+          if(sizeFactor.width < 1 || sizeFactor.height < 1) {
+            //first time we take avarage scale of width and height
+            const scale = (sizeFactor.width + sizeFactor.height)/2;
+            scaleText(innerDOM, scale);
+          }
+        }
+        {
+          const sizeFactor = getInnerOuterSizeFactor(innerDOM, outerDOM);
+          if(sizeFactor.width < 1 || sizeFactor.height < 1) {
+            //second time we take min scale of width and height
+            const scale = Math.min(sizeFactor.width, sizeFactor.height)
+            scaleText(innerDOM, scale);
+          }
+        }
+      };
+    </script>
+  </head>
+  <body>
+
+    <div id="preview" class="text outer">
+      <span class="inner">{{text}}</span>
+    </div>
+    <canvas></canvas>
+  </body>
+</html>
