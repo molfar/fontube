@@ -17,7 +17,7 @@ program
 program.parse();
 
 const { variant, output, ...data } = program.opts();
-const templatePath = path.join("./templates", `${variant}.hbs`);
+const templatePath = path.resolve(__dirname, `./templates/${variant}.hbs`);
 
 Promise.all([
   compile(templatePath, data),
