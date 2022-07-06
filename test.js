@@ -27,8 +27,7 @@ launch().then(async (browser) => {
         browser.createIncognitoBrowserContext(),
       ])
         .then(([html, context]) => convert(context, html, outputPath))
-        .then(console.log)
-        .catch(console.error);
+        .then(console.log);
 
       tasks.push(task);
     }

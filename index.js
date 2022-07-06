@@ -24,12 +24,6 @@ Promise.all([
   launch().then((b) => b.defaultBrowserContext()),
 ]).then(([html, context]) =>
   convert(context, html, output)
-    .catch((err) => {
-      console.error(err);
-      process.exit(1);
-    })
-    .then((msg) => {
-      console.log(msg);
-      context.browser().close();
-    })
+    .then(console.log)
+    .finally(() => context.browser().close())
 );
