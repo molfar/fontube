@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const { program } = require("commander");
-const { launch, compile, convert } = require("./lib/convert");
+const { convert } = require("./lib/convert");
 const path = require("path");
 
 program
@@ -16,14 +16,7 @@ program
 
 program.parse();
 
-const { variant, output, ...data } = program.opts();
+const { variant, output: outputPath, ...data } = program.opts();
 const templatePath = path.resolve(__dirname, `./templates/${variant}.hbs`);
 
-Promise.all([
-  compile(templatePath, data),
-  launch().then((b) => b.defaultBrowserContext()),
-]).then(([html, context]) =>
-  convert(context, html, output)
-    .then(console.log)
-    .finally(() => context.browser().close())
-);
+convert({ templatePath, data, outputPath }).then(console.log);
