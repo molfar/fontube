@@ -19,4 +19,9 @@ program.parse();
 const { variant, output: outputPath, ...data } = program.opts();
 const templatePath = path.resolve(__dirname, `./templates/${variant}.hbs`);
 
-convert({ templatePath, data, outputPath }).then(console.log);
+convert({ templatePath, data, outputPath })
+  .then(console.log)
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

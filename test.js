@@ -25,7 +25,9 @@ launch().then((browser) => {
       };
 
       tasks.push(
-        convert({ templatePath, data, outputPath, browser }).then(console.log)
+        convert({ templatePath, data, outputPath, browser })
+          .then(console.log)
+          .catch(console.error)
       );
     }
   }
