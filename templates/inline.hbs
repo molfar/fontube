@@ -11,62 +11,156 @@
         background: transparent;
         overflow: hidden;
       }
-      .text {
-        display: inline-block;
-        margin-top: 50px;
-      }
     </style>
-    <script> 
+    <script>
+      //setting id = 'preview' to HTMlElement indicates that preview is ready and causes preview generation 
       window.onload = async() => {
-        //loading font
-        const fontFace = new FontFace("{{family}}", 'url("{{url}}")');
-        await fontFace.load();
-        document.fonts.add(fontFace);
-        ///////////////
         const FONT_SIZE = 32;
-        const MIN_CHAR_HEIGHT = 24;
-        const MAX_TEXT_HEIGHT = 48;
+        const MIN_CHAR_HEIGHT = 20;
+        const MAX_TEXT_HEIGHT = 44;
+        const PREVIEW_HEIGHT = 48;
         //get canvas context
         const canvas = document.querySelector('canvas');
         const ctx = canvas.getContext('2d');
-        //set up font styles
-        ctx.font = `${FONT_SIZE}px "{{family}}"`;
-        ctx.strokeStyle = '#373737';
+        try{
+          //loading font
+          const fontFace = new FontFace("{{family}}", 'url("{{url}}")');
+          await fontFace.load();
+          document.fonts.add(fontFace);
+          //set up font styles
+          ctx.font = `${FONT_SIZE}px "{{family}}"`;
+          ctx.strokeStyle = '#373737';
 
-        const text = '{{family}}';
-        //measuring text
-        const textMetrics = ctx.measureText(text);
-        const actualMinCharHeight = text.split('').filter(ch => !!ch).reduce((accum, ch) => {
-          const metrics = ctx.measureText(ch);
-          const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-          if(height === 0) return accum;
-          return Math.min(accum, height);
-        }, 1000);
-        const actualTextHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
-        
-        //find scale to fit text
-        const minCharHeightScale = MIN_CHAR_HEIGHT/actualMinCharHeight;
-        const maxTextHeightScale = MAX_TEXT_HEIGHT/actualTextHeight;
-        const resultScale = Math.min(maxTextHeightScale, minCharHeightScale);
-        //text offset from border
-        const offsetX = 4;
-        const offsetY = (MAX_TEXT_HEIGHT - actualTextHeight * resultScale)/2;
-        //set canvas new width
-        canvas.width = textMetrics.width * resultScale + offsetX*2;
-        canvas.style.width = textMetrics.width * resultScale + 'px';
-        //set new font size
-        const nextFontSize = FONT_SIZE * resultScale;
-        ctx.font = `${nextFontSize}px "{{family}}"`;
-        //draw text with new font size
-        const x = offsetX;
-        const y = offsetY + textMetrics.actualBoundingBoxAscent * resultScale;
-        ctx.fillText(text, x, y);
+          const text = '{{family}}';
+          //measuring text
+          const textMetrics = ctx.measureText(text);
+          const filterRegExp = new RegExp('[a-zA-Z0-9]');
+          const actualMinCharHeight = text.split('').filter(ch => {
+            //filter special chars
+            return filterRegExp.test(ch);
+          }).reduce((accum, ch) => {
+            const metrics = ctx.measureText(ch);
+            const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+            if(height === 0) return accum;
+            return Math.min(accum, height);
+          }, 1000);
+
+          const actualTextHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+          const actualTextLeft = Math.max(textMetrics.actualBoundingBoxLeft, 0);
+          const actualTextWidth = actualTextLeft + textMetrics.actualBoundingBoxRight;
+          
+          //find scale to fit text
+          const minCharHeightScale = MIN_CHAR_HEIGHT/actualMinCharHeight;
+          const maxTextHeightScale = MAX_TEXT_HEIGHT/actualTextHeight;
+          let resultScale = 1;
+          if(actualMinCharHeight * resultScale < MIN_CHAR_HEIGHT) {
+            resultScale = minCharHeightScale;
+          }
+          if(actualTextHeight * resultScale > MAX_TEXT_HEIGHT) {
+            resultScale = maxTextHeightScale;
+          }
+          //set canvas new width
+          canvas.style.width = (actualTextWidth) * resultScale + 'px';
+          canvas.width = (actualTextWidth) * resultScale;
+          //set new font size
+          const nextFontSize = FONT_SIZE * resultScale;
+          ctx.font = `${nextFontSize}px "{{family}}"`;
+          //draw text with new font size
+          const x = actualTextLeft * resultScale;
+          const y = 
+            (PREVIEW_HEIGHT - actualTextHeight * resultScale)/2
+            + textMetrics.actualBoundingBoxAscent * resultScale;
+          ctx.fillText(text, x, y);
+        } finally {
+          canvas.id = 'preview';
+        }
       };
     </script>
   </head>
   <body>
-    <div id="preview" class="text">
-      <canvas width="500" height="48" style="height: 48px;"></canvas>
-    </div>
+    <canvas width="500" height="48" style="width: 500px; height: 48px;"></canvas>
+  </body>
+</html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: transparent;
+        overflow: hidden;
+      }
+    </style>
+    <script>
+      //setting id = 'preview' to HTMlElement indicates that preview is ready and causes preview generation 
+      window.onload = async() => {
+        const FONT_SIZE = 32;
+        const MIN_CHAR_HEIGHT = 20;
+        const MAX_TEXT_HEIGHT = 44;
+        const PREVIEW_HEIGHT = 48;
+        //get canvas context
+        const canvas = document.querySelector('canvas');
+        const ctx = canvas.getContext('2d');
+        try{
+          //loading font
+          const fontFace = new FontFace("{{family}}", 'url("{{url}}")');
+          await fontFace.load();
+          document.fonts.add(fontFace);
+          //set up font styles
+          ctx.font = `${FONT_SIZE}px "{{family}}"`;
+          ctx.strokeStyle = '#373737';
+
+          const text = '{{family}}';
+          //measuring text
+          const textMetrics = ctx.measureText(text);
+          const filterRegExp = new RegExp('[a-zA-Z0-9]');
+          const actualMinCharHeight = text.split('').filter(ch => {
+            //filter special chars
+            return filterRegExp.test(ch);
+          }).reduce((accum, ch) => {
+            const metrics = ctx.measureText(ch);
+            const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+            if(height === 0) return accum;
+            return Math.min(accum, height);
+          }, 1000);
+
+          const actualTextHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
+          const actualTextLeft = Math.max(textMetrics.actualBoundingBoxLeft, 0);
+          const actualTextWidth = actualTextLeft + textMetrics.actualBoundingBoxRight;
+          
+          //find scale to fit text
+          const minCharHeightScale = MIN_CHAR_HEIGHT/actualMinCharHeight;
+          const maxTextHeightScale = MAX_TEXT_HEIGHT/actualTextHeight;
+          let resultScale = 1;
+          if(actualMinCharHeight * resultScale < MIN_CHAR_HEIGHT) {
+            resultScale = minCharHeightScale;
+          }
+          if(actualTextHeight * resultScale > MAX_TEXT_HEIGHT) {
+            resultScale = maxTextHeightScale;
+          }
+          //set canvas new width
+          canvas.style.width = (actualTextWidth) * resultScale + 'px';
+          canvas.width = (actualTextWidth) * resultScale;
+          //set new font size
+          const nextFontSize = FONT_SIZE * resultScale;
+          ctx.font = `${nextFontSize}px "{{family}}"`;
+          //draw text with new font size
+          const x = actualTextLeft * resultScale;
+          const y = 
+            (PREVIEW_HEIGHT - actualTextHeight * resultScale)/2
+            + textMetrics.actualBoundingBoxAscent * resultScale;
+          ctx.fillText(text, x, y);
+        } finally {
+          canvas.id = 'preview';
+        }
+      };
+    </script>
+  </head>
+  <body>
+    <canvas width="500" height="48" style="width: 500px; height: 48px;"></canvas>
   </body>
 </html>
