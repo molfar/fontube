@@ -13,5 +13,8 @@
     "commander": "^9.3.0",
     "handlebars": "^4.7.7",
     "puppeteer": "^15.0.0"
+  },
+  "devDependencies": {
+    "throat": "^6.0.1"
   }
 }

@@ -2,6 +2,7 @@ const { convert, launch } = require("./lib/convert");
 const fixtures = require("./fixtures.json");
 const path = require("path");
 const fs = require("fs");
+const throat = require("throat")(8);
 
 fs.readdirSync("./previews")
   .filter((f) => f.endsWith(".png"))
@@ -25,9 +26,11 @@ launch().then((browser) => {
       };
 
       tasks.push(
-        convert({ templatePath, data, outputPath, browser })
-          .then(console.log)
-          .catch(console.error)
+        throat(() =>
+          convert({ templatePath, data, outputPath, browser })
+            .then(console.log)
+            .catch(console.error)
+        )
       );
     }
   }
