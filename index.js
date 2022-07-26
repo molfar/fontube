@@ -3,6 +3,7 @@
 const { program } = require("commander");
 const { convert } = require("./lib/convert");
 const path = require("path");
+require("dotenv").config();
 
 program
   .name("fontube")

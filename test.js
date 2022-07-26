@@ -3,6 +3,7 @@ const fixtures = require("./fixtures.json");
 const path = require("path");
 const fs = require("fs");
 const throat = require("throat")(8);
+require("dotenv").config();
 
 fs.readdirSync("./previews")
   .filter((f) => f.endsWith(".png"))
