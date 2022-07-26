@@ -4,14 +4,14 @@
   "description": "",
   "bin": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "remote": "REMOTE_BROWSER=true node test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "commander": "^9.3.0",
-    "dotenv": "^16.0.1",
     "handlebars": "^4.7.7",
     "puppeteer": "^15.0.0"
   },
