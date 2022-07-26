@@ -5,7 +5,7 @@
   "bin": "index.js",
   "scripts": {
     "test": "node test.js",
-    "remote": "REMOTE_BROWSER=true node test.js"
+    "remote": "BROWSER_URL=ws://localhost:3000 node test.js"
   },
   "keywords": [],
   "author": "",
